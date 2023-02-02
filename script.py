@@ -2,6 +2,10 @@ import requests
 import json
 import time
 import pandas as pd
+import sys
+import itertools
+import threading
+import datetime
 
 # define variables
 
@@ -38,9 +42,18 @@ def get_ride_price(origin_latitude, origin_longitude, destination_latitude, dest
     result = [[x['vehicleViewDisplayName'], x['fareString']] for x in response.json()['data']['prices']]
     return result
 
-# Initiliaze the start time
+# Spinner function
+def spinner_thread():
+    while True:
+        for char in itertools.cycle('|/-\\'):
+            sys.stdout.write(f'\rProcess working... {char}')
+            sys.stdout.flush()
+            time.sleep(0.1)
+            sys.stdout.write('\r')
+
+# Initilize the start time
 start_time = time.time()
-df = pd.DataFrame(columns=['start_latitude', 'start_longitude', 'end_latitude', 'end_longitude'] + [service for service, price in get_ride_price(origin_latitude, origin_longitude, destination_latitude, destination_longitude)])
+df = pd.DataFrame(columns=['timestamp', 'start_latitude', 'start_longitude', 'end_latitude', 'end_longitude'] + [service for service, price in get_ride_price(origin_latitude, origin_longitude, destination_latitude, destination_longitude)])
 
 # Loop the program for as many times as necessary
 while True:
@@ -50,6 +63,7 @@ while True:
     print(ride_prices)
     
     ride_data = {
+        'timestamp': [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
         'start_latitude': origin_latitude,
         'start_longitude': origin_longitude,
         'end_latitude': destination_latitude,
@@ -64,12 +78,15 @@ while True:
     # Save the data to a CSV file after each iteration - incase of a timeout
     df.to_csv('ride_prices.csv', index=False)
 
-    if time.time() - start_time >= 10 * 60 * 60: # Change the 10 to change the number of hours (10 = 10 hours)
+    if time.time() - start_time >= 24 * 60 * 60: # Change the 10 to change the number of hours (10 = 10 hours)
         break
+
+    thread = threading.Thread(target=spinner_thread)
+    thread.start()
 
     # wait for a given number of minutes
     # Change the 5 to the given number of minutes (5 = 5 minutes)
-    time.sleep(5 * 60)
+    time.sleep(0.5 * 60)
 
 #display data at the end
 print(df)
