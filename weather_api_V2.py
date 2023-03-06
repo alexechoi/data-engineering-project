@@ -4,7 +4,6 @@ import os
 import schedule # pip install schedule
 import pandas as pd
 import time # time module for monitoring when it is checking etc
-import csv
 
 API_endpoint = "http://api.openweathermap.org"
 lat = 51.509865
@@ -24,49 +23,13 @@ current_coord_weather_url= coord_API_endpoint + lat_long + join_key + units
 
 start_time = time.time() # start time gets the time that we are gonna start the while loop
 
-# make the csv
-with open('weather-output.csv', 'w') as creating_new_csv_file: 
-   pass 
-print("Empty CSV Created Successfully")
+# make the JSON file
+data = []
+with open('weather-output.json', 'w') as f:
+    json.dump(data, f)
+print("Empty JSON File Created Successfully")
 
-# headers for the csv
-headers = [
-        'longitude',
-        'latitude',
-        'weather_id',
-        'weather_main',
-        'weather_desc',
-        'weather_icon',
-        'base',
-        'temperature',
-        'feels_like',
-        'temp_min',
-        'temp_max',
-        'pressure',
-        'humidity',
-        'visibility',
-        'wind_speed',
-        'wind_deg',
-        'clouds',
-        'dt',
-        'sys_type',
-        'sys_id',
-        'sys_country',
-        'sys_sunrise',
-        'sys_sunset',
-        'timezone',
-        'id',
-        'city',
-        'cod'
-    ]
-
-# add headers to csv
-with open('weather-output.csv', 'w', newline='') as file:
-    writer = csv.DictWriter(file, fieldnames=headers)
-    writer.writeheader()
-    print("Headers added to CSV")
-
-def request_data_and_save(excel_file: str = "weather.xlsx"):
+def request_data_and_save():
     request = requests.get(current_coord_weather_url)
     request_text = request.text
     JSON = json.loads(request_text)
@@ -103,17 +66,17 @@ def request_data_and_save(excel_file: str = "weather.xlsx"):
     
     print(filterJSON)
     
-    dct = {k:[v] for k,v in filterJSON.items()}
+    data.append(filterJSON)
     
-    # save the csv
-    with open('weather-output.csv', 'a', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=dct.keys())
-        writer.writerow(dct)
+    # save the JSON file
+    with open('weather-output.json', 'w') as f:
+        json.dump(data, f, indent=4)
     
 while True:
     request_data_and_save()
     
-    if time.time() - start_time >= 3 * 24 * 60 * 60: # Change the 10 to change the number of hours (10 = 10 hours)
+    if time.time() - start_time >= 3 * 24 * 60 * 60: # Change the 3 to change the number of days (3 = 
+
         break
     
     time.sleep(2 * 60) # 2 is number of minutes
