@@ -37,3 +37,4 @@ for block in property_blocks:
 # Write the data to a JSON file
 with open('hotels.json', 'w') as f:
     json.dump(data, f)
+    print("Hotels saved as hotels.json")
