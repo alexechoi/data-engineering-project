@@ -40,28 +40,11 @@ def request_data_and_save():
         'weather_id': str(JSON['weather'][0]['id']),
         'weather_main': str(JSON['weather'][0]['main']),
         'weather_desc': str(JSON['weather'][0]['description']),
-        'weather_icon': str(JSON['weather'][0]['icon']),
-        'base': str(JSON['base']),
         'temperature': str(JSON['main']['temp']),
         'feels_like': str(JSON['main']['feels_like']),
-        'temp_min': str(JSON['main']['temp_min']),
-        'temp_max': str(JSON['main']['temp_max']),
-        'pressure': str(JSON['main']['pressure']),
-        'humidity': str(JSON['main']['humidity']),
-        'visibility': str(JSON['visibility']),
-        'wind_speed': str(JSON['wind']['speed']),
-        'wind_deg': str(JSON['wind']['deg']),
         'clouds': str(JSON['clouds']['all']),
         'dt': str(JSON['dt']),
-        'sys_type': str(JSON['sys']['type']),
-        'sys_id': str(JSON['sys']['id']),
-        'sys_country': str(JSON['sys']['country']),
-        'sys_sunrise': str(JSON['sys']['sunrise']),
-        'sys_sunset': str(JSON['sys']['sunset']),
-        'timezone': str(JSON['timezone']),
-        'id': str(JSON['id']),
-        'city': str(JSON['name']),
-        'cod': str(JSON['cod'])
+        'id': str(JSON['id'])
     }
     
     print(filterJSON)
