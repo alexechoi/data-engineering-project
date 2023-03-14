@@ -1,9 +1,9 @@
 import json
 
 def create_route():
-    with open("/project/geolocation/coordinates_hotel.json") as f1:
+    with open("/coordinates_hotel.json") as f1:
         hotels = json.load(f1)
-    with open("/project/geolocation/coordinates_train.json") as f2:
+    with open("/coordinates_train.json") as f2:
         trains = json.load(f2)
     routes = {}
     for train_name, train_coord in trains.items():
