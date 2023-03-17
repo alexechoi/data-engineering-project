@@ -11,7 +11,7 @@ from get_ride_price import get_ride_price
 from time import sleep, time
 
 # Load routes from JSON file
-with open("/routes.json") as f:
+with open("../routes/routes.json") as f:
     routes = json.load(f)
 
 # Set the start time
