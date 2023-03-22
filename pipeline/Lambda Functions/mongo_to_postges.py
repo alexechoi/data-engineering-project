@@ -9,12 +9,12 @@ import psycopg2
 
 def lambda_handler(event, context):
     # Connect to MongoDB
-    mongodb_uri = "CREDENTIALS"
+    mongodb_uri = "***REMOVED***"
     mongo_client = pymongo.MongoClient(mongodb_uri)
     mongodb = mongo_client.group_db
 
     # Connect to PostgreSQL
-    postgres_connection = "CREDENTIALS"
+    postgres_connection = "***REMOVED***"
     pg_conn = psycopg2.connect(postgres_connection)
     pg_cursor = pg_conn.cursor()
 
@@ -128,46 +128,6 @@ def transform_tweet_data(tweets):
 
     return tweet_data, tweet_metadata
 
-"""
-def transform_uber_data(uber_data, routes_data):
-    transformed_data = []
-    route_id_map = {}
-    current_route_id = 1  # Initialize a counter for assigning unique route IDs
-
-    for route in routes_data:
-        start_coordinate = (route['start_coordinate']['latitude'], route['start_coordinate']['longitude'])
-        end_coordinate = (route['end_coordinate']['latitude'], route['end_coordinate']['longitude'])
-        route_key = (start_coordinate, end_coordinate)
-        if route_key not in route_id_map:
-            route_id_map[route_key] = current_route_id
-            current_route_id += 1
-
-    for uber in uber_data:
-        origin_latitude = uber['origin_latitude']
-        origin_longitude = uber['origin_longitude']
-        destination_latitude = uber['destination_latitude']
-        destination_longitude = uber['destination_longitude']
-
-        start_coordinate = (origin_latitude, origin_longitude)
-        end_coordinate = (destination_latitude, destination_longitude)
-
-        route_id = route_id_map.get((start_coordinate, end_coordinate), None)
-
-        if route_id is not None:
-            transformed_data.append({
-                'timestamp': uber['timestamp'],
-                'readable_timestamp': uber['readable_timestamp'],
-                'origin_latitude': origin_latitude,
-                'origin_longitude': origin_longitude,
-                'destination_latitude': destination_latitude,
-                'destination_longitude': destination_longitude,
-                'route_id': route_id,
-                'prices': uber['prices'],
-            })
-
-    return transformed_data
-"""
-
 def transform_uber_data(uber_data, routes_data):
     transformed_uber_ride_data = []
     transformed_uber_price_data = []
@@ -224,24 +184,23 @@ def transform_weather_data(weather_data, location_ids, postgres_connection):
     weather_location = []
     weather_main = []
     weather_conditions = []
-    current_id = 1
 
     for weather in weather_data:
-        weather_id = current_id
-        current_id += 1
+        weather_id = weather['id']
+        condition_id = weather['weather_id']
 
         location_id = location_ids.get((weather['latitude'], weather['longitude']))
 
         if not location_id:
             # Insert a new train station if location_id is not found
             new_train_station = {
-                'id': current_id,
-                'name': f"Train Station {current_id}",
+                'id': weather_id,
+                'name': f"Train Station {weather_id}",
                 'lat': weather['latitude'],
                 'long': weather['longitude']
             }
             insert_train_station_data([new_train_station], postgres_connection)
-            location_id = current_id
+            location_id = weather_id
             location_ids[(weather['latitude'], weather['longitude'])] = location_id
 
         print(f"Adding weather record for location_id: {location_id}")
@@ -249,19 +208,19 @@ def transform_weather_data(weather_data, location_ids, postgres_connection):
         weather_location.append({
             'id': weather_id,
             'location_id': location_id,
-            'main_id': weather_id,
-            'condition_id': weather['weather_id'],
+            'main_id': condition_id,
+            'condition_id': condition_id,
             'dt': datetime.utcfromtimestamp(weather['dt'])
         })
 
         weather_main.append({
-            'id': weather_id,
+            'id': condition_id,
             'main': weather['weather_main'],
             'desc': weather['weather_desc']
         })
 
         weather_conditions.append({
-            'id': weather_id,
+            'id': condition_id,
             'temperature': weather['temperature'],
             'feels_like': weather['feels_like'],
             'clouds': weather['clouds']
@@ -272,44 +231,6 @@ def transform_weather_data(weather_data, location_ids, postgres_connection):
     print("Weather conditions records:", len(weather_conditions))
 
     return weather_location, weather_main, weather_conditions
-
-
-"""
-def transform_routes_data(routes_data):
-    transformed_data = []
-    location_ids = {}
-
-    current_location_id = 1
-
-    for route in routes_data:
-        route_id = route['route_id']
-        start_lat = route['start_coordinate']['latitude']
-        start_long = route['start_coordinate']['longitude']
-        end_lat = route['end_coordinate']['latitude']
-        end_long = route['end_coordinate']['longitude']
-
-        start_coordinates = (start_lat, start_long)
-        end_coordinates = (end_lat, end_long)
-
-        # Generate unique IDs for start and end locations
-        if start_coordinates not in location_ids:
-            location_ids[start_coordinates] = current_location_id
-            current_location_id += 1
-        start_location_id = location_ids[start_coordinates]
-
-        if end_coordinates not in location_ids:
-            location_ids[end_coordinates] = current_location_id
-            current_location_id += 1
-        end_location_id = location_ids[end_coordinates]
-
-        transformed_data.append({
-            'id': int(route_id),
-            'start_location_id': start_location_id,
-            'end_location_id': end_location_id
-        })
-
-    return transformed_data, location_ids
-"""
 
 def transform_routes_data(routes_data, weather_data):
     routes = []
@@ -454,21 +375,14 @@ def insert_weather_data(data, postgres_connection):
 
     with psycopg2.connect(postgres_connection) as conn:
         with conn.cursor() as cur:
-            for record in weather_location:
-                cur.execute("""
-                    INSERT INTO weather_location (id, location_id, main_id, condition_id, dt)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON CONFLICT (id) DO NOTHING;
-                """, (record['id'], record['location_id'], record['main_id'], record['condition_id'], record['dt']))
-            conn.commit()
-
+            # Insert weather_conditions and weather_main records first
             for record in weather_conditions:
                 cur.execute("""
                     INSERT INTO weather_conditions (id, temperature, feels_like, clouds)
-                    VALUES (%s, %s, %s)
+                    VALUES (%s, %s, %s, %s)
                     ON CONFLICT (id) DO NOTHING;
                 """, (record['id'], record['temperature'], record['feels_like'], record['clouds']))
-            conn.commit()
+
 
             for record in weather_main:
                 cur.execute("""
@@ -478,6 +392,14 @@ def insert_weather_data(data, postgres_connection):
                 """, (record['id'], record['main'], record['desc']))
             conn.commit()
 
+            # Insert weather_location records after weather_conditions and weather_main
+            for record in weather_location:
+                cur.execute("""
+                    INSERT INTO weather_location (id, location_id, main_id, condition_id, dt)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING;
+                """, (record['id'], record['location_id'], record['main_id'], record['condition_id'], record['dt']))
+            conn.commit()
 
 
 def insert_routes_data(routes, start_location, end_location, postgres_connection):
