@@ -1,7 +1,6 @@
 import requests
-import json
 import datetime
-
+import json
 def search_tweets(bearer_token, query, max_results):
     # Prepare the headers to pass the authentication to Twitter's api
     headers = {
@@ -11,7 +10,7 @@ def search_tweets(bearer_token, query, max_results):
     # Set start_time to 1 day before the current time and end_time to the current time
     now = datetime.datetime.now(datetime.timezone.utc)
     start_time = (now - datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
-    end_time = now.strftime('%Y-%m-%dT%H:%M:%SZ')
+    end_time = end_time = (now - datetime.timedelta(seconds=10)).strftime('%Y-%m-%dT%H:%M:%SZ')
 
     params = (
         ('query', query),
@@ -35,18 +34,15 @@ def search_tweets(bearer_token, query, max_results):
             tweets = {}
 
         # Save the json file
-        with open("/home/ubuntu/output/twitter.json", "w+") as json_file:
+        with open("/home/ubuntu/output/tweets.json", "w") as json_file:
             json_string = json.dumps(tweets, sort_keys=True, indent=4)
             json_file.write(json_string)
+        print('Twitter API saved to tweets.json')
 
     else:
         print("Request failed with status code", response.status_code)
         print("Response text:", response.text)
 
-# Call the function with the desired variables as arguments
-bearer_token = '***REMOVED***'
-query = "uber London OR #uber #London"
-max_results = 20
-search_tweets(bearer_token, query, max_results)
+
 
 
