@@ -13,6 +13,15 @@ fi
 # Loop every hour
 while true
 do
+  # Wait for the flag file to appear
+  while [ ! -f "scheduler_done.flag" ]
+  do
+    sleep 10
+  done
+
+  # Remove the flag file
+  rm scheduler_done.flag
+
   # Loop through all .json files in the output directory
   for file in output/*.json
   do
@@ -23,9 +32,9 @@ do
     mv "$file" archive/
     echo "Moved $file to archive/"
   done
-  
+
   echo "All files moved to S3 and archive."
-  
+
   # Sleep for an hour before looping again
   sleep 3600
 done
