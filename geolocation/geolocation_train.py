@@ -1,10 +1,13 @@
-import requests
 import json
+import requests
+import os
 
-def get_coordinates_from_file(json_file_path, api_key):
+def get_coordinates_from_file_trains(json_file_path, api_key):
     """
     Retrieves latitude and longitude coordinates for each location in a JSON file, and writes the results to a new JSON file.
     """
+    import json
+
     def get_coordinates(name, api_key):
         """
         Returns the latitude and longitude coordinates of a location based on its name.
@@ -21,10 +24,15 @@ def get_coordinates_from_file(json_file_path, api_key):
             print('Could not find coordinates for', name)
             return None
 
+# Create an empty JSON file if it doesn't exist
+    if not os.path.exists(json_file_path):
+        with open(json_file_path, 'w') as f:
+            json.dump({'name': []}, f)
+
     with open(json_file_path, 'r') as f:
         data = json.load(f)
 
-    locations = data['name']
+    locations = data["name"]
     coordinates = {}
     for location in locations:
         coords = get_coordinates(location, api_key)
@@ -37,10 +45,3 @@ def get_coordinates_from_file(json_file_path, api_key):
     print('Coordinates saved to coordinates_train.json')
 
 
-
-
-
-api_key='***REMOVED***'
-train_stations = '/home/ubuntu/input/train_stations.json'
-
-get_coordinates_from_file(train_stations, api_key)
