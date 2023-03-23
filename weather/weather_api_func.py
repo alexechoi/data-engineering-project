@@ -42,12 +42,23 @@ def get_weather_data(json_file_path, api_key):
 
     # Save the JSON file
     try:
-        with open('/home/ubuntu/output/weather.json', 'w') as f:
-            json.dump(weather_data, f)
-        print("Data appended to file successfully")
-        
+       output_dir = '/home/ubuntu/output/'
+       os.makedirs(output_dir, exist_ok=True)
+       file_path = os.path.join(output_dir, 'weather.json')
+       if os.path.exists(file_path):
+          with open(file_path, 'r') as f:
+              weather_data = json.load(f)
+       else:
+            weather_data = []
+
+       weather_data += JSON
+
+       with open(file_path, 'w') as f:
+          json.dump(weather_data, f)
+          print('Data appended to file successfully')
+
     except Exception as e:
-        print("Error writing to file:", e)
+        print('Error writing to file:', e)
 
     print('Weather APIs saved to weather.json')
 
