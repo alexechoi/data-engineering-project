@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-
+import os
 
 def get_hotels_booking(url):
     headers = {
@@ -39,7 +39,13 @@ def get_hotels_booking(url):
         data.append(hotel_data)
         counter += 1  # Increment the counter for each hotel scraped
 
+
     # Write the data to a JSON file
+ # Check if the hotels.json file exists. If not, create an empty file.
+    if not os.path.exists('/home/ubuntu/output/hotels.json'):
+        with open('/home/ubuntu/output/hotels.json', 'w') as f:
+            json.dump([], f)
+
     with open('/home/ubuntu/output/hotels.json', 'w') as f:
         json.dump(data, f)
 
