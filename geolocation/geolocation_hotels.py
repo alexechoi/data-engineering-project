@@ -1,7 +1,8 @@
-import requests
 import json
+import requests
+import os
 
-def get_coordinates_from_file(json_file_path, api_key):
+def get_coordinates_from_file_hotels(json_file_path, api_key):
     """
     Retrieves latitude and longitude coordinates for each location in a JSON file, and writes the results to a new JSON file.
     """
@@ -20,9 +21,13 @@ def get_coordinates_from_file(json_file_path, api_key):
         else:
             print('Could not find coordinates for', location)
             return None
+ # Create an empty JSON file if it doesn't exist
+    if not os.path.exists(json_file_path):
+        with open(json_file_path, 'w') as f:
+            json.dump([], f)
 
     with open(json_file_path, 'r') as f:
-        data = json.load(f)
+         data = json.load(f)
 
     coordinates = {}
     for hotel in data:
@@ -34,11 +39,6 @@ def get_coordinates_from_file(json_file_path, api_key):
     with open('/home/ubuntu/output/coordinates_hotel.json', 'w') as f:
         json.dump(coordinates, f)
 
-    print('Coordinates saved to coordinates.json')
-
-
-api_key='***REMOVED***'
-
-hotels = '/home/ubuntu/output/hotels.json'
-
-get_coordinates_from_file(hotels, api_key)
+    print('Coordinates saved to coordinates_hotel.json')
+    
+ 
